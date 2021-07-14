@@ -1,7 +1,7 @@
 exec: &exec
   name: build-tools/nerves-system-br
-  version: 1.14.0
-  elixir: 1.11.2-otp-23
+  version: 1.16.1
+  elixir: 1.12.1-otp-24
 
 version: 2.1
 
@@ -25,12 +25,6 @@ workflows:
           context: org-global
           requires:
             - build-tools/build-system
-      - build-tools/deploy-test:
-          exec:
-            <<: *exec
-          context: org-global
-          requires:
-            - build-tools/build-test
       - build-tools/deploy-system:
           exec:
             <<: *exec
