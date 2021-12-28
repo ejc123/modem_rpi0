@@ -4,7 +4,9 @@
 [![Hex version](https://img.shields.io/hexpm/v/nerves_system_rpi0.svg "Hex version")](https://hex.pm/packages/nerves_system_rpi0)
 
 This is the base Nerves System configuration for the Raspberry Pi Zero and
-Raspberry Pi Zero W.
+Raspberry Pi Zero W. See
+[`nerves_system_rpi3a`](https://github.com/nerves-project/nerves_system_rpi3a)
+for support for the Raspberry Pi Zero 2 W.
 
 If you are *not* interested in [Gadget Mode](http://www.linux-usb.org/gadget/)
 then check out
@@ -20,7 +22,7 @@ appropriate for your setup.
 | CPU                  | 1 GHz ARM1176JZF-S              |
 | Memory               | 512 MB                          |
 | Storage              | MicroSD                         |
-| Linux kernel         | 5.4 w/ Raspberry Pi patches     |
+| Linux kernel         | 5.10 w/ Raspberry Pi patches    |
 | IEx terminal         | UART `ttyAMA0` Can be changed to HDMI |
 | GPIO, I2C, SPI       | Yes - [Elixir Circuits](https://github.com/elixir-circuits) |
 | ADC                  | No                              |
@@ -29,7 +31,7 @@ appropriate for your setup.
 | Camera               | Yes - via rpi-userland          |
 | Ethernet             | No                              |
 | WiFi                 | Supported on the Pi Zero W      |
-| Bluetooth            | Not supported yet               |
+| Bluetooth            | [Supported on the Pi Zero W](#bluetooth) |
 | Audio                | HDMI/Stereo out                 |
 
 ## Using
@@ -41,7 +43,7 @@ for more information.
 
 If you need custom modifications to this system for your device, clone this
 repository and update as described in [Making custom
-systems](https://hexdocs.pm/nerves/customizing-systems.html)
+systems](https://hexdocs.pm/nerves/customizing-systems.html).
 
 ## USB OTG support
 
@@ -80,18 +82,18 @@ The base image includes drivers for the onboard Raspberry Pi Zero W wifi module
 (`brcmfmac` driver). Due to the USB port being placed in gadget mode, this
 system does not support USB WiFi adapters.
 
+## Bluetooth
+
+[BlueHeronTransportUART](https://github.com/blue-heron/blue_heron_transport_uart)
+supports bluetooth on the Pi Zero W using `ttyS0`.
+See details
+[here](https://github.com/nerves-project/nerves_system_rpi0/issues/224#issuecomment-913799838).
+
 ## Audio
 
 The Raspberry Pi has many options for audio output. This system supports the
 HDMI and stereo audio jack output. The Linux ALSA drivers are used for audio
 output.
-
-To try it out, run:
-
-```elixir
-cmd("espeak -ven+f5 -k5 -w /tmp/out.wav Hello")
-cmd("aplay -q /tmp/out.wav")
-```
 
 The general Raspberry Pi audio documentation mostly applies to Nerves. For
 example, to force audio out the HDMI port, run:
