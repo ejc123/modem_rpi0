@@ -29,21 +29,24 @@ defmodule NervesSystemRpi0.MixProject do
   end
 
   def application do
+    check_rpi_v2_ack!()
     []
   end
 
   defp bootstrap(args) do
     set_target()
     Application.start(:nerves_bootstrap)
+    # We're compiling locally so ack v2 req
+    Application.put_env(:nerves, :rpi_v2_ack, true)
     Mix.Task.run("loadconfig", args)
   end
 
   defp nerves_package do
     [
       type: :system,
-      artifact_sites: [
-        {:github_releases, "#{@github_organization}/#{@app}"}
-      ],
+#      artifact_sites: [
+#        {:github_releases, "#{@github_organization}/#{@app}"}
+#      ],
       build_runner_opts: build_runner_opts(),
       platform: Nerves.System.BR,
       platform_config: [
@@ -86,7 +89,7 @@ defmodule NervesSystemRpi0.MixProject do
       main: "readme",
       assets: "assets",
       source_ref: "v#{@version}",
-      source_url: @source_url,
+#      source_url: @source_url,
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
     ]
   end
@@ -95,7 +98,7 @@ defmodule NervesSystemRpi0.MixProject do
     [
       files: package_files(),
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => @source_url}
+#      links: %{"GitHub" => @source_url}
     ]
   end
 
@@ -112,6 +115,7 @@ defmodule NervesSystemRpi0.MixProject do
       "linux-5.15.defconfig",
       "mix.exs",
       "nerves_defconfig",
+      "nerves_initramfs.conf",
       "post-build.sh",
       "post-createfs.sh",
       "ramoops.dts",
@@ -137,6 +141,42 @@ defmodule NervesSystemRpi0.MixProject do
       apply(Mix, :target, [:target])
     else
       System.put_env("MIX_TARGET", "target")
+    end
+  end
+
+  defp check_rpi_v2_ack!() do
+    acked? = Application.get_env(:nerves, :rpi_v2_ack) || System.get_env("NERVES_RPI_V2_ACK")
+
+    unless acked? do
+      Mix.raise("""
+
+
+      You are using #{@app} >= 2.0.0 which is technically
+      backwards compatible, but requires one manual step if
+      you are attempting to update the firmware on an existing
+      device via ssh, upload script, NervesHub, or other remote
+      firmware update procedure.
+
+      You will need to validate the running firmware on the
+      device before installing a firmware built with this system.
+      Otherwise, you will get an unexpected and misleading fwup error.
+
+      To validate and avoid the fwup error, run:
+
+        Nerves.Runtime.validate_firmware()
+
+      Or if using :nerves_runtime < 0.11.2, run:
+
+        Nerves.Runtime.KV.put("nerves_fw_validated", "1")
+
+      If you are burning the firmware directly to a SD card, then
+      nothing needs to be done.
+
+      To allow compilation to complete, acknowledge you have read
+      this warning by adding this line to your `config.exs`:
+
+        config :nerves, rpi_v2_ack: true
+      """)
     end
   end
 end
